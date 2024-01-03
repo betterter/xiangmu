@@ -1,0 +1,678 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include<string.h>
+//建立一个结构体，存放学生的信息
+typedef struct student {
+	long int num;
+	char name[20];
+	char sex[2];
+	char brithday[12];
+	char tel[12];
+	struct student* next;
+}Node, * L;
+void menu();
+/*打印主菜单
+*/
+void createlist(L* r);
+int out(L r);
+int insert(L* r);
+int del(L* r);
+int search(L r);
+int sort(L* r);
+int lenth(L r);
+int main() {
+	int input;
+	L head;
+	createlist(&head);
+	Go:
+	menu();
+	scanf("%d", &input);
+	switch (input) {
+	case 1: if (out(head)) goto Go; break;
+	case 2:if (insert(&head)) goto Go; break;
+	case 3: if (del(&head))goto Go; break;
+	case 4: if (search(head))goto Go; break;
+	case 5: if (lenth(head))goto Go; break;
+	}return 0;
+}
+void menu() {
+	system("cls");
+	printf("\t学生管理系统\n");
+	printf("=============================\n");
+	printf("请输入相应数字开始相应的操作\n");
+	printf(" 1.查看所有学生信息\n");
+	printf(" 2.录入新学生的信息\n");
+	printf(" 3.按学号删除学生信息\n");
+	printf(" 4.按学号查找某个学生的信息\n");
+	printf(" 5.当前学生人数\n");
+	//还没有做排序和输出，第六点的函数功能还没有做,不管，先整合.
+	printf(" 6.输出学生排序后的信息\n");
+
+}
+//1、建立链表并显示
+void createlist(L* r) {
+	//建立头指针
+	*r = (L)malloc(sizeof(Node));
+	//判断头指针是否为空 
+	//不为空，开辟空间失败，返回错误 
+	if (!(*r)) return;
+	//开辟空间成功使头指针的指针域为空 
+	(*r)->next = NULL;
+}
+int out(L r) {
+	//1.输出学生管理系统中所有学生信息
+	system("cls");
+	int returnflag;
+	L p = r;
+	//判断头结点的指针域的指向是否为空
+	if (!(p->next)){
+		printf("该学生管理系统中无学生\n");
+	}
+	else{
+		p = p->next;
+		printf("系统中所有学生信息如下\n");
+		printf("学号\t\t姓名\t性别\t出生年月\t电话\n");
+		while(p){
+			printf("%ld\t%s\t%s\t%s\t%s\n",p->num,p->name, p->sex, p->brithday, p->tel);
+			p = p ->next;
+		}
+	}
+	printf("查看完成，按1返回主界面，按0退出程序\n");
+	scanf("%d", &returnflag);
+	return returnflag;
+}
+int insert(L* r) {
+	system("cls");
+	//2、插入新的学生信息
+	//定义开始和退出条件
+	int inputflag, index = 1;
+	printf("按1开始输入信息,按0退出输入\n");
+	scanf("%d", &inputflag);
+	system("cls");
+	//开辟了一个新结点
+	L q, p;
+	q = *r;
+	if (inputflag) {
+		do {
+			//创建一个新的结点
+			p = (L)malloc(sizeof(Node));
+			//头指针指向第一个结点
+			//开始输入数据	
+			if (!p) return 0;
+			else
+			q->next = p;
+			printf("请输入第%d个学生的信息\n", index++);
+			printf("学号:\t\t姓名:\t性别:\t出生年月:\t电话:\n");
+			scanf("%ld", &p->num); getchar();
+			scanf("%s", p->name); getchar();
+			scanf("%s",p->sex); getchar();
+			scanf("%s",p->brithday); getchar();
+			scanf("%s",p->tel);
+			q = q->next;
+			printf("按1继续输入，按0则退出输入\n");
+			scanf("%d", &inputflag);
+		} while (inputflag);
+		printf("输入完成，按1返回菜单,按0退出程序\n");
+		scanf("%d", &inputflag);
+		return inputflag;
+	}
+}
+int del(L* r) {
+	//3.查找学号并且删除该学号的学生 
+	//定义一个变量记录要删除的学生的学号
+	system("cls");
+	long int delnum;
+	int findflag = 0;
+	printf("请输入你要删除学生的学号\n");
+	scanf("%ld", &delnum);
+	//遍历除开头节点以外的每一个存储信息的节点
+	//定义一个结构指针
+	L p, q, s;
+	//p指向头结点
+	p = *r;
+	//定义一个q始终在拍前面的一个结点
+	q = p;
+	while (p->next) {
+		//p从第一个结点开始遍历
+		p = p->next;
+		if (p->num == delnum) {
+			s = p;
+			q->next = p->next;
+			p = p->next;
+			free(s);
+			findflag = 1;
+		}
+		else {
+			q = q->next;
+			continue;
+		}
+		if (findflag) break;
+	}
+	if (p->next == NULL && findflag == 0) {
+		printf("未找到该学生,按1重新输入，按0退出删除\n");
+		scanf("%d", &findflag);
+		if (findflag) del(r);
+	}
+	else {
+		printf("已删除该学生，按1继续删除，按0退出删除\n");
+		scanf("%d", &findflag);
+		if (findflag) del(r);
+	}
+	printf("删除操作完成，按1返回主界面，按0退出程序\n");
+	scanf("%d", &findflag);
+	return findflag;
+}
+int search(L r) {
+	//4.按学号查找某个学生的信息
+	system("cls");
+	long int sernum;
+	int findflag = 1;
+	printf("请输入你要查找的学生的学号\n");
+	scanf("%ld", &sernum);
+	//跳过头结点
+	L p = r;
+	while (p->next) {
+		p = p->next;
+		if (p->num == sernum) {
+			printf("该学生的信息如下:\n学号\t姓名\t性别\t出生年月\t电话\n");
+			printf("%ld\t%s\t%s\t%s\t%s", p->num, p->name, p->sex, p->brithday, p->tel);
+			findflag = 0;
+		}
+	}
+	if (findflag)
+		printf("未找到该学生信息\n");
+	printf("查看完成，按1返回主界面，按0退出程序\n");
+	scanf("%d", &findflag);
+	return findflag;
+}
+int lenth(L r) {
+	system("cls");
+	//5.统计该表格中学生的人数有多少人
+	int count = 0, returnflag;
+	//定义p指向头结点
+	L p;
+	p = r;
+	while(p->next){
+		count++;p = p->next;
+	}
+	printf("该管理系统中有%d个学生\n", count);
+	printf("按1返回主界面，按0退出程序\n");
+	scanf("%d", &returnflag);
+	return returnflag;
+}
+
+
+
+
+
+
+
+
+
+
+
+#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+typedef struct score {
+	int chinese;
+	int math;
+	int english;
+}score;
+
+typedef struct stu {
+	char name[20];
+	char num[20];
+	char sex[10];
+	int age;
+	int total;
+	score s;
+}stu;
+
+typedef struct linklist {
+	stu date;
+	struct linklist* next;
+}linklist;
+
+struct linklist* head = NULL;
+struct linklist* tail = NULL;
+
+void menu() {
+	system("cls");
+	printf("\t\t\t\t***************************************************\n");
+	printf("\t\t\t\t*\t\t学生管理系统   1.0                *\n");
+	printf("\t\t\t\t***************************************************\n");
+	printf("\t\t\t\t*                                                 *\n");
+	printf("\t\t\t\t*1.添加学生信息   2.查找学生信息  3.删除学生信息  *\n");
+	printf("\t\t\t\t*                                                 *\n");
+	printf("\t\t\t\t*4.修改学生信息   5.排序(total)    6.显示所以信息 *\n");
+	printf("\t\t\t\t*                                                 *\n");
+	printf("\t\t\t\t*7.退出程序                                       *\n");
+	printf("\t\t\t\t*                                                 *\n");
+	printf("\t\t\t\t***************************************************\n");
+}
+
+void add(linklist* head) {
+	printf("\t\t\t\t欢迎来到删除界面，请按要求完成操作|（@@）|\n");
+	linklist* q = (linklist*)malloc(sizeof(linklist));
+	q->next = NULL;
+	linklist* p;
+	p = head;
+	char nam[20];
+	printf("请输入姓名:");
+	scanf("%s", nam);
+	printf("\n请输入学号：");
+	char num[20];
+	scanf("%s", num);
+	while (p->next != NULL) {
+		if (strcmp(p->date.num, num) == 0 && strcmp(p->date.name, nam) == 0) {
+			printf("该学生已存在\n");
+			break;
+		}
+		p = p->next;
+	}
+	if (p->next == NULL) {
+		strcpy(q->date.num, num);
+		strcpy(q->date.name, nam);
+		printf("\n性别：");
+		scanf("%s", q->date.sex);
+		printf("\n请输入年龄：");
+		scanf("%d", &q->date.age);
+		printf("\n请输入语文成绩：");
+		scanf("%d", &q->date.s.chinese);
+		printf("\n请输入数学成绩：");
+		scanf("%d", &q->date.s.math);
+		printf("\n请输入英语成绩：");
+		scanf("%d", &q->date.s.english);
+		q->date.total = q->date.s.chinese + q->date.s.english + q->date.s.math;
+		p->next = q;
+		p = q;
+	}
+}
+
+void delet(linklist* head) {
+
+	linklist* p, * q;
+	p = (linklist*)malloc(sizeof(linklist));
+	q = (linklist*)malloc(sizeof(linklist));
+	p = head;
+	q = p->next;
+	char name3[20];
+	if (p == NULL) {
+		printf("此时无数据");
+		return;
+	}
+	else {
+		printf("请输入你想删除的学生的名字");
+		scanf("%s", name3);
+		while (q != NULL) {
+			if (strcmp(q->date.name, name3) == 0) {
+				p->next = q->next;
+				free(q);
+				printf("\t\t\t\t******************************\n");
+				printf("\t\t\t\t******************************\n");
+				printf("\t\t\t\t*** @恭喜您！删除成功！！！***\n");
+				printf("\t\t\t\t******************************\n");
+				printf("\t\t\t\t******************************\n\n\n");
+			}
+			p = q;
+			q = q->next;
+		}
+
+	}
+}
+
+void seek(linklist* head) {
+	int k = 0;
+	char name3[20];
+	printf("请输入学生姓名：\n");
+	scanf("%s", name3);
+	linklist* p;
+	p = (linklist*)malloc(sizeof(linklist));
+	p = head->next;
+	if (p == NULL) {
+		printf("\t\t\t\t\t@还未录入信息！！！\n");
+	}
+	while (p != NULL) {
+		if (strcmp(name3, p->date.name) == 0) {
+			k = k + 1;
+			printf("\n姓名\t\t年龄\t\t性别\t\t学号\t\t语文\t\t数学\t\t英语\t\t总分\n");
+			printf("%s", p->date.name);
+			printf("\t\t%3d", p->date.age);
+			printf("\t\t");
+			printf("%s", p->date.sex);
+			printf("\t\t");
+			printf("%s", p->date.num);
+			printf("\t\t%3d", p->date.s.chinese);
+			printf("\t\t%3d", p->date.s.math);
+			printf("\t\t%3d", p->date.s.english);
+			printf("\t\t%3d", p->date.total);
+			//	printf("\n%s\t\t%3d\t\t%s\t\t%s\t\t%3d\t\t%3d\t\t%3d",p->date.name,p->date.age,p->date.sex,p->date.num,p->date.s.chinese,p->date.s.math,p->date.s.english);
+
+		}
+		p = p->next;
+	}
+	if (k == 0) {
+		printf("查无此人");
+	}
+}
+
+void change(linklist* head) {
+	printf("\t\t\t\t欢迎来到修改界面，请按要求完成操作|（@@）|\n");
+	char name4[20];
+	printf("请输入学生姓名：\n");
+	scanf("%s", name4);
+	int k = 0;
+	linklist* p;
+	p = (linklist*)malloc(sizeof(linklist));
+	p = head->next;
+	while (p != NULL) {
+		if (strcmp(name4, p->date.name) == 0) {
+			k = 1;
+			printf("%s", p->date.num);
+			printf("\n姓名\t\t年龄\t\t性别\t\t学号\t\t语文\t\t数学\t\t英语\t\t总分\n");
+			printf("%s", p->date.name);
+			printf("\t\t%3d", p->date.age);
+			printf("\t\t");
+			printf("%s", p->date.sex);
+			printf("\t\t");
+			printf("%s", p->date.num);
+			printf("\t\t%3d", p->date.s.chinese);
+			printf("\t\t%3d", p->date.s.math);
+			printf("\t\t%3d", p->date.s.english);
+			p->date.total = p->date.s.chinese + p->date.s.english + p->date.s.math;
+			printf("\t\t%3d\n", p->date.total);
+		}
+
+		p = p->next;
+	}
+	if (k == 0) {
+		printf("查无此人\n");
+	}
+	printf("\n\t\t\t\t************************************************\n");
+	printf("\t\t\t\t************************************************\n");
+	printf("\t\t\t\t*1.学号  \t2.性别  \t3.年龄         *\n");
+	printf("\t\t\t\t*                                              *\n");
+	printf("\t\t\t\t*4.语文成绩\t5.英语成绩\t6.数学成绩     *\n");
+	printf("\t\t\t\t************************************************\n");
+	int sel4;
+	printf("\n请按要求输入要修改信息的编号：");
+	scanf("%d", &sel4);
+	p = head->next;
+	while (p != NULL) {
+		if (strcmp(name4, p->date.name) == 0) {
+			switch (sel4) {
+			case 1:
+				char s1[20];
+				printf("\n请输入修改后的学号：");
+				scanf("%s", s1);
+				strcpy(p->date.num, s1);
+				break;
+			case 2:
+				char s2[20];
+				printf("\n请输入修改后的性别：");
+				scanf("%s", s2);
+				strcpy(p->date.sex, s2);
+				break;
+			case 3:
+				int s3;
+				printf("\n请输入修改后的年龄：");
+				scanf("%d", &s3);
+
+				p->date.age = s3;
+				break;
+			case 4:
+				int s4;
+				printf("\n请输入修改后的语文成绩：");
+				scanf("%d", &s4);
+
+				p->date.s.chinese = s4;
+				break;
+			case 5:
+				int s5;
+				printf("\n请输入修改后的英语成绩：");
+				scanf("%d", &s5);
+
+				p->date.s.english = s5;
+				break;
+			case 6:
+				int s6;
+				printf("\n请输入修改后的数学成绩：");
+				scanf("%d", &s6);
+
+				p->date.s.math = s6;
+				break;
+			}
+		}
+		p = p->next;
+	}
+}
+
+void print(linklist* head) {
+	linklist* p;
+	p = (linklist*)malloc(sizeof(linklist));
+	p = head->next;
+	printf("\n姓名\t\t年龄\t\t性别\t\t学号\t\t语文\t\t数学\t\t英语\t\t总分\n");
+	while (p != NULL) {
+
+		printf("%s", p->date.name);
+		printf("\t\t%3d", p->date.age);
+		printf("\t\t");
+		printf("%s", p->date.sex);
+		printf("\t\t");
+		printf("%s", p->date.num);
+		printf("\t\t%3d", p->date.s.chinese);
+		printf("\t\t%3d", p->date.s.math);
+		printf("\t\t%3d", p->date.s.english);
+		printf("\t\t%3d\n", p->date.total);
+		p = p->next;
+	}
+
+}
+
+void sort(linklist* head) {
+	int b = 1;
+	if (head->next == NULL) {
+		b = 0;
+	}
+	if (b == 0) {
+		printf("当前无数据/n");
+	}
+	if (b == 1) {
+		linklist* p, * q;
+		p = (linklist*)malloc(sizeof(linklist));
+		q = (linklist*)malloc(sizeof(linklist));
+		printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		printf("@@@       接下来请选择排序方式（|$@$|）      @@@\n");
+		printf("@@@@@@@1.按年龄排序                       @@@@@@\n");
+		printf("@@@@@@@2.按语文成绩排序                   @@@@@@\n");
+		printf("@@@@@@@3.按英语成绩排序                   @@@@@@\n");
+		printf("@@@@@@@4.按数学成绩排序                   @@@@@@\n");
+		printf("@@@@@@@5.按总成绩排序                    @@@@@@\n");
+		printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		printf("你的选择是：");
+		int flag;
+		scanf("%d", &flag);
+		for (p = head; p != NULL; p = p->next) {
+			for (q = p->next; q != NULL; q = q->next) {
+				switch (flag) {
+				case 1:
+					if (p->date.age < q->date.age) {
+						linklist* x;
+						x = (linklist*)malloc(sizeof(linklist));
+						x->date = p->date;
+						p->date = q->date;
+						q->date = x->date;
+						free(x);
+					}
+					break;
+				case 2:
+					if (p->date.s.chinese < q->date.s.chinese) {
+						linklist* x;
+						x = (linklist*)malloc(sizeof(linklist));
+						x->date = p->date;
+						p->date = q->date;
+						q->date = x->date;
+						free(x);
+
+					}
+					break;
+				case 3:
+					if (p->date.s.english < q->date.s.english) {
+						linklist* x;
+						x = (linklist*)malloc(sizeof(linklist));
+						x->date = p->date;
+						p->date = q->date;
+						q->date = x->date;
+						free(x);
+
+					}
+					break;
+				case 4:
+					if (p->date.s.math < q->date.s.math) {
+						linklist* x;
+						x = (linklist*)malloc(sizeof(linklist));
+						x->date = p->date;
+						p->date = q->date;
+						q->date = x->date;
+						free(x);
+
+					}
+					break;
+
+				case 5:
+					if (p->date.total < q->date.total) {
+						linklist* x;
+						x = (linklist*)malloc(sizeof(linklist));
+						x->date = p->date;
+						p->date = q->date;
+						q->date = x->date;
+						free(x);
+
+					}
+					break;
+				}
+			}
+		}
+	}
+
+
+}
+
+/*void save(linklist *head)
+{
+	system("cls");
+	fflush(stdin);
+	FILE *fp;
+	linklist *p;
+	fp=fopen("stu.db","wb");
+
+	for(p=head;p!=NULL;p=p->next)
+	{
+		fwrite(p,LEN,1,fp);
+	}
+	fclose(fp);
+	printf("♂♂♂♂保存完毕♂♂♂♂♂\n");
+	system("pause");
+	system("cls");
+	fflush(stdin);
+}*/
+
+
+int main()
+{
+	int choose;
+	head = (linklist*)malloc(sizeof(linklist));
+	head->next = NULL;
+	while (1) {
+		menu();
+		scanf("%d", &choose);
+		switch (choose) {
+		case 1:
+
+			do {
+				system("cls");
+				add(head);
+				char sel[5];
+				printf("\t\t\t\t\t\t是否继续添加(yes or no): ");
+				scanf("%s", sel);
+				if (strcmp(sel, "yes") == 0) continue;
+				else break;
+			} while (1);
+			break;
+		case 2:
+
+			do {
+				printf("\t\t\t\t欢迎来到查找界面，请按要求完成操作|（@@）|\n");
+				seek(head);
+				printf("\n\n\t\t\t\t\t\t是否继续查找(yes or no)：");
+				char sel2[5];
+				scanf("%s", sel2);
+				if (strcmp(sel2, "yes") == 0) continue;
+				else break;
+			} while (1);
+			break;
+		case 3:
+			do {
+
+				delet(head);
+				char sel3[5];
+				printf("\t\t\t\t是否继续删除(yes or no): ");
+				scanf("%s", sel3);
+				if (strcmp(sel3, "yes") == 0) continue;
+				else break;
+			} while (1);
+			break;
+		case 4:
+			change(head);
+			break;
+		case 5:
+			printf("\t\t\t\t欢迎来到排序界面，请按要求完成操作|（@@）|\n");
+			printf("原顺序：\n");
+			print(head);
+			do {
+				int flag;
+				printf("如需进行下一步选择1，退出选择0：");
+				scanf("%d", &flag);
+				if (flag == 1) {
+					sort(head);
+					print(head);
+					continue;
+				}
+				if (flag == 0) break;
+
+			} while (1);
+			break;
+		case 6:
+			system("cls");
+			printf("\t\t\t\t欢迎来输出到界面，请按要求完成操作|（@@）|\n\n\n");
+			print(head);
+			printf("退出请输入0：");
+			int sel6;
+			scanf("%d", &sel6);
+			if (sel6 == 0) break;
+			/*	case 7:
+					remember(head);
+					break; */
+		default:
+			printf("\n感谢使用！\n");
+			printf("\n                                                     *\n");
+			printf("                                                *  ***  ****\n");
+			printf("                                              *** **** ****\n");
+			printf("                                             **** **** **** ****\n");
+			printf("                                             **** **** **** ****\n");
+			printf("                                             **** **** **** ****\n");
+			printf("                                             **** **** **** ****\n");
+			printf("                                             **** **** **** ****\n");
+			printf("                                              **** ******* ****\n");
+			printf("                                                *************\n");
+			printf("                                                    *****\n");
+			system("pause");
+			return 0;
+		}
+	}
+	return 0;
+}
